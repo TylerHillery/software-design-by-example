@@ -1,7 +1,8 @@
 from collections import defaultdict
 import sys
-from hashlib import sha256
+import hashlib
 
+CHUNK_SIZE = 4096
 
 def same_bytes(left, right):
     left_bytes = open(left, "rb").read()
@@ -24,8 +25,13 @@ def find_groups(filenames):
     groups = defaultdict(set)
     for fn in filenames:
         with open(fn, "rb") as f:
-            data = f.read()
-        hash_code = sha256(data).hexdigest()
+            hasher = hashlib.sha256()
+            while True:
+                chunk = f.read(CHUNK_SIZE)
+                if not chunk:
+                    break
+                hasher.update(chunk)
+        hash_code = hasher.hexdigest()
         groups[hash_code].add(fn)
     return groups
 
